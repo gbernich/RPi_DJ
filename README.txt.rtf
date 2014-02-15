@@ -1,0 +1,134 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red255\green255\blue255;}
+\margl1440\margr1440\vieww16220\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 How to Make the Raspberry Pi Host a Website\
+\
+Step 1. Install Raspbian on the Raspberry Pi.\
+\
+	- Go to {\field{\*\fldinst{HYPERLINK "http://www.raspberrypi.org/downloads"}}{\fldrslt http://www.raspberrypi.org/downloads}} and download the NOOBS (network install).\
+	- Format the SD card.\
+	- Unzip the NOOBS file and extract the contents onto the SD card (drag and drop).\
+	- Put the SD card into the Raspberry Pi and boot it (plug it in).\
+	- Choose Raspbian and click install (or hit \'93i\'94 on a keyboard).\
+	- The defaults are user: pi    password: raspberry\
+\
+Step 2. Install SSH.\
+\
+	- sudo apt-get install ssh\
+	- sudo update-rc.d ssh defaults\
+	- sudo reboot\
+\
+Step 3. Network Configuration\
+\
+	- sudo nano /etc/network/interfaces\
+		- iface eth0 inet static\
+		- address 192.168.1.215 (your choice here)\
+		- netmask 255.255.255.0\
+		- gateway 192.168.1.1\
+	- Ctrl+X to save and exit\
+	- sudo reboot\
+\
+Step 4. Update the pre-installed software on the system.\
+\
+	- sudo dpkg-reconfigure tzdata\
+	- sudo apt-get update\
+	- sudo apt-get upgrade\
+\
+Step 5. Install Apache (web server)\
+\
+	- sudo apt-get install apache2 php5 libapache2-mod-php5\
+	- sudo service apache2 restart\
+	- Now test by entering its IP into your web browser\
+\
+Step 6. Install MySQL (database)\
+	\
+	- sudo apt-get install mysql-server mysql-client php5-mysql\
+	- sudo reboot\
+\
+Step 7. Install FTP (so you can code on your computer and transfer files to the RPi)\
+\
+	- sudo chown -R pi /var/www\
+	- sudo apt-get install vsftpd\
+	- sudo nano /etc/vsftpd.conf\
+		- change anonymous_enable=YES to NO\
+		- uncomment local_enable=YES and write_enable=YES\
+		- add to bottom of file: force_dot_files=YES\
+	- sudo service vsftpd restart\
+\
+	- sudo passwd root\
+	- log out of SSH session (cmd = logout)\
+	- log into SSH as root\
+	- nano /etc/passwd\
+		- uncomment out the line that says pi:x:1000\'85.\
+	- usermod -d /var/www pi\
+	- exit SSH and log back in with pi\
+	- sudo usermod -L root\
+	- now log off\
+	- you can use an FTP client to easily read and write files to /var/www (use port 21)\
+\
+\
+\
+How to Make Your Raspberry Pi a Modern-Day Jukebox!\
+\
+Step 8. Install Python MySQL library\
+\
+	- sudo apt-get install python-mysqldb\
+\
+Step 9. Download id3reader for Python (this reads the tags on the mp3 files)\
+\
+	- This is the link: {\field{\*\fldinst{HYPERLINK "http://nedbatchelder.com/code/modules/id3reader.html"}}{\fldrslt http://nedbatchelder.com/code/modules/id3reader.html}}\
+	- follow the instructions there\
+\
+Step 10. Auto-mount an external hard drive.\
+	\
+	- ls -l /dev/disk/by-uuid/\
+	- get the UUID number (it follows after the date) on the ../../sda1 line 
+\f1\fs22 \CocoaLigature0 7E0D-1907
+\f0\fs24 \CocoaLigature1 \
+	- sudo mkdir /media/JUKEBOX (or what ever you would like)\
+	- sudo chmod 777 /media/JUKEBOX \
+	- sudo mount -t vfat -o uid=pi,gid=pi /dev/sda1 /media/JUKEBOX\
+	- sudo cp /etc/fstab /etc/fstab.backup\
+	- sudo nano /etc/fstab \
+	- add this line: UUID=<your uuid #> /media/JUKEBOX vfat umask=000 0 0\
+	- sudo reboot\
+\
+Step 11. Set up the raspberry pi to rip music off of YouTube.\
+	\
+	- Install youtube-dl (this downloads videos from youtube given the web link)\
+		- \cb1 sudo curl https://yt-dl.org/downloads/2014.01.28.1/youtube-dl -o /usr/local/bin/youtube-dl\
+\pard\pardeftab720
+\cf0 		- sudo chmod a+x /usr/local/bin/youtube-dl\
+		- sudo wget https://yt-dl.org/downloads/2014.01.28.1/youtube-dl.sig -O youtube-dl.sig\
+		- gpg --verify youtube-dl.sig /usr/local/bin/youtube-dl\
+		- rm youtube-dl.sig\
+		- if you have problems check this website for updated instructions if available: {\field{\*\fldinst{HYPERLINK "http://rg3.github.io/youtube-dl/download.html"}}{\fldrslt http://rg3.github.io/youtube-dl/download.html}}\
+		- I\'92ve also found that the instructions involving the sig file are not needed (so feel free to skipping them if they don\'92t work ;) )\
+\
+	- Install ffmpeg (to get wav file from video)\
+		- sudo apt-get install ffmpeg\
+	\
+	- Install lame (to convert wav to mp3)\
+		- sudo apt-get lame\
+\
+\
+	**Usage**: This process is as simple as 4 commands in the terminal.\
+		- \cb2 $ youtube-dl http://www.youtube.com/watch?v=6E2hYDIFDIU\cb1 \
+		- \cb2 $ youtube-dl --get-title http://www.youtube.com/watch?v=6E2hYDIFDIU\
+\cb1 		- \cb2 $ ffmpeg -i 6E2hYDIFDIU.flv 6E2hYDIFDIU.wav\
+\cb1 		- \cb2 $ lame 6E2hYDIFDIU.wav 6E2hYDIFDIU.mp3\cb1 \
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \cb1 \
+So now you are ready to start coding. Here are a couple of very good resources:\
+\
+	- PHP and MySQL: {\field{\*\fldinst{HYPERLINK "http://dev.mysql.com/tech-resources/articles/ddws/"}}{\fldrslt http://dev.mysql.com/tech-resources/articles/ddws/}}\
+	- Python and SQL: {\field{\*\fldinst{HYPERLINK "http://www.tutorialspoint.com/python/python_database_access.htm"}}{\fldrslt http://www.tutorialspoint.com/python/python_database_access.htm}}\
+\
+\
+Now get coding\
+}
